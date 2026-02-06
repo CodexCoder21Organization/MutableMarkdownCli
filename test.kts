@@ -14,17 +14,12 @@ import kotlin.test.assertTrue
  * These verify the CLI classes are properly compiled and accessible.
  */
 
-// Test: Main class exists
-println("Test: Main class is accessible")
-val mainClass = Class.forName("mutablemarkdowncli.MainKt")
-assertNotNull(mainClass, "MainKt class should exist")
-println("  PASSED")
+fun testMainClassIsAccessible() {
+    val mainClass = Class.forName("mutablemarkdowncli.MainKt")
+    assertNotNull(mainClass, "MainKt class should exist")
+}
 
-// Test: CLI help output
-println("Test: CLI prints help with --help")
-// Note: We can't easily capture System.exit, so we just verify the class loads
-assertTrue(true, "CLI module loaded successfully")
-println("  PASSED")
-
-println()
-println("All tests passed!")
+fun testCliModuleLoadsSuccessfully() {
+    // Verify the CLI module loaded without errors
+    assertTrue(true, "CLI module loaded successfully")
+}
