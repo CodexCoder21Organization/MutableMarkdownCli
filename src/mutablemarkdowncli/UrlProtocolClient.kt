@@ -1,6 +1,6 @@
 package mutablemarkdowncli
 
-import foundation.url.protocol.UrlResolver
+import foundation.url.resolver.UrlResolver
 import org.json.JSONObject
 
 /**
