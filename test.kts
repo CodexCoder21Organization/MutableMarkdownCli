@@ -1,8 +1,7 @@
 @file:WithArtifact("community.kotlin.markdown:cli:0.0.2")
 @file:WithArtifact("org.jetbrains.kotlin:kotlin-stdlib:1.9.22")
 @file:WithArtifact("org.jetbrains.kotlin:kotlin-test:1.9.22")
-@file:WithArtifact("commons-cli:commons-cli:1.9.0")
-package mutablemarkdowncli
+package mutablemarkdowncli.tests
 
 import build.kotlin.withartifact.WithArtifact
 import kotlin.test.assertNotNull
