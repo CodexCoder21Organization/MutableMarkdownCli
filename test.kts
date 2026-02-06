@@ -1,4 +1,3 @@
-@KotlinBuildScript("https://tools.kotlin.build/")
 @file:WithArtifact("community.kotlin.markdown:cli:0.0.2")
 @file:WithArtifact("org.jetbrains.kotlin:kotlin-stdlib:1.9.22")
 @file:WithArtifact("org.jetbrains.kotlin:kotlin-test:1.9.22")
