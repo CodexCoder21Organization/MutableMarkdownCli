@@ -8,38 +8,17 @@ import org.json.JSONObject
  *
  * This client uses UrlResolver to discover and communicate with the url://markdown/
  * service over the P2P network.
+ *
+ * The UrlResolver handles all network joining, peer discovery, and service resolution
+ * automatically. By default, UrlResolver eagerly joins the network in the background,
+ * so by the time the first RPC call happens, services may already be discovered.
  */
 class UrlProtocolClient(private val serviceUrl: String) : AutoCloseable {
+    // UrlResolver eagerly joins the network by default (eagerlyJoinNetwork=true),
+    // starting gossip collection immediately in the background. This reduces latency
+    // on the first RPC call since the network may already be joined and services
+    // may already be discovered by the time we make the call.
     private val resolver = UrlResolver()
-
-    init {
-        // Join the network to participate in gossip and receive announcements
-        resolver.joinNetwork()
-
-        // Discover peers from the network
-        resolver.discoverPeers(10)
-
-        // Wait for service announcements to be received via gossip
-        Thread.sleep(3000)
-
-        // Query for the service
-        val serviceName = serviceUrl.removePrefix("url://").removeSuffix("/")
-        var matchingPeers = resolver.findPeersForService(serviceName)
-
-        // If no peers found, retry with more discovery
-        if (matchingPeers.isEmpty()) {
-            for (attempt in 1..5) {
-                resolver.discoverPeers(5)
-                Thread.sleep(2000)
-                matchingPeers = resolver.findPeersForService(serviceName)
-                if (matchingPeers.isNotEmpty()) break
-            }
-        }
-
-        if (matchingPeers.isEmpty()) {
-            System.err.println("Warning: No peers found advertising '$serviceName' service")
-        }
-    }
 
     /**
      * Health check.
