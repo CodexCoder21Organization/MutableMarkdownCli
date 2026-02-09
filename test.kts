@@ -2,7 +2,7 @@
 @file:WithArtifact("org.jetbrains.kotlin:kotlin-stdlib:1.9.22")
 @file:WithArtifact("org.jetbrains.kotlin:kotlin-test:1.9.22")
 @file:WithArtifact("org.json:json:20250517")
-@file:WithArtifact("foundation.url:resolver:0.0.269")
+@file:WithArtifact("foundation.url:resolver:0.0.293")
 @file:WithArtifact("foundation.url:protocol:0.0.154")
 @file:WithArtifact("community.kotlin.clocks.simple:community-kotlin-clocks-simple:0.0.1")
 @file:WithArtifact("org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm:1.8.0")
