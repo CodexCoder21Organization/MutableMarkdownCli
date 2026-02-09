@@ -18,7 +18,7 @@ val dependencies = resolveDependencies(
     MavenPrebuilt("commons-cli:commons-cli:1.9.0"),
     // UrlResolver and UrlProtocol for url:// protocol support
     MavenPrebuilt("foundation.url:resolver:0.0.293"),
-    MavenPrebuilt("foundation.url:protocol:0.0.154"),
+    MavenPrebuilt("foundation.url:protocol:0.0.165"),
     // Clock abstraction (required by UrlProtocol)
     MavenPrebuilt("community.kotlin.clocks.simple:community-kotlin-clocks-simple:0.0.1"),
     // Coroutines
@@ -68,7 +68,9 @@ fun buildMaven(): File {
         //        - Use --server url://markdown/ to connect via URL protocol
         //        - HTTP client remains for local testing
         // 0.0.3: Update foundation.url:resolver to 0.0.293
-        coordinates = "community.kotlin.markdown:cli:0.0.3",
+        // 0.0.4: Fix UrlProtocol version mismatch (0.0.154 → 0.0.165)
+        //        - UrlResolver 0.0.293 requires UrlProtocol 0.0.165
+        coordinates = "community.kotlin.markdown:cli:0.0.4",
         src = File("src"),
         compileDependencies = dependencies
     )
