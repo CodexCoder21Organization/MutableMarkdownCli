@@ -81,12 +81,12 @@ fun main(args: Array<String>) {
             )
             val urlProtocol = UrlProtocol2(bootstrapPeers = listOf(bootstrapPeer))
             val resolver = UrlResolver(urlProtocol)
-            resolver.use {
-                val connection = resolver.openSandboxedConnection("url://markdown/", MarkdownService::class)
-                connection.use {
-                    val service = connection.proxy
-                    executeCommandUrl(command, commandArgs, cmd.getOptionValue("output"), service, options)
-                }
+            val connection = resolver.openSandboxedConnection("url://markdown/", MarkdownService::class)
+            try {
+                val service = connection.proxy
+                executeCommandUrl(command, commandArgs, cmd.getOptionValue("output"), service, options)
+            } finally {
+                connection.close()
             }
         } else {
             // Use HTTP client for http:// or https:// URLs
