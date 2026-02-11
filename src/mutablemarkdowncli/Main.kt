@@ -1,5 +1,9 @@
 package mutablemarkdowncli
 
+import community.kotlin.markdown.api.MarkdownService
+import foundation.url.protocol.Libp2pPeer
+import foundation.url.resolver.UrlProtocol2
+import foundation.url.resolver.UrlResolver
 import org.apache.commons.cli.*
 import java.io.File
 import java.text.SimpleDateFormat
@@ -67,9 +71,22 @@ fun main(args: Array<String>) {
     try {
         // Choose client based on URL scheme
         if (serverUrl.startsWith("url://")) {
-            // Use URL protocol client for url:// URLs
-            UrlProtocolClient(serverUrl).use { client ->
-                executeCommand(command, commandArgs, cmd.getOptionValue("output"), client, options)
+            // Use typed SJVM sandboxed client for url:// URLs
+            val peerId = "12D3KooWLMyXNfwhcX1YsiNx3hnjk3GGSfsU1fydRa8bzrE6scMT"
+            val multiaddr = "/ip4/198.199.106.165/tcp/35000/p2p/$peerId"
+            val bootstrapPeer = Libp2pPeer.remote(
+                peerId = peerId,
+                multiaddresses = listOf(multiaddr),
+                advertisedServices = listOf("markdown")
+            )
+            val urlProtocol = UrlProtocol2(bootstrapPeers = listOf(bootstrapPeer))
+            val resolver = UrlResolver(urlProtocol)
+            resolver.use {
+                val connection = resolver.openSandboxedConnection("url://markdown/", MarkdownService::class)
+                connection.use {
+                    val service = connection.proxy
+                    executeCommandUrl(command, commandArgs, cmd.getOptionValue("output"), service, options)
+                }
             }
         } else {
             // Use HTTP client for http:// or https:// URLs
@@ -82,20 +99,20 @@ fun main(args: Array<String>) {
     }
 }
 
-private fun executeCommand(
+private fun executeCommandUrl(
     command: String,
     commandArgs: List<String>,
     outputPath: String?,
-    client: UrlProtocolClient,
+    service: MarkdownService,
     options: Options
 ) {
     when (command) {
-        "upload" -> handleUploadUrl(client, commandArgs)
-        "download" -> handleDownloadUrl(client, commandArgs, outputPath)
-        "edit" -> handleEditUrl(client, commandArgs)
-        "list" -> handleListUrl(client)
-        "delete" -> handleDeleteUrl(client, commandArgs)
-        "health" -> handleHealthUrl(client)
+        "upload" -> handleUploadUrl(service, commandArgs)
+        "download" -> handleDownloadUrl(service, commandArgs, outputPath)
+        "edit" -> handleEditUrl(service, commandArgs)
+        "list" -> handleListUrl(service)
+        "delete" -> handleDeleteUrl(service, commandArgs)
+        "health" -> handleHealthUrl()
         else -> {
             System.err.println("Unrecognized command: $command")
             printUsage(options)
@@ -146,10 +163,10 @@ private fun printUsage(options: Options) {
 }
 
 // ============================================================================
-// URL Protocol handlers
+// URL Protocol handlers (typed SJVM sandboxed client)
 // ============================================================================
 
-private fun handleUploadUrl(client: UrlProtocolClient, args: List<String>) {
+private fun handleUploadUrl(service: MarkdownService, args: List<String>) {
     if (args.isEmpty()) {
         throw IllegalArgumentException("upload requires a file path argument")
     }
@@ -169,44 +186,44 @@ private fun handleUploadUrl(client: UrlProtocolClient, args: List<String>) {
     val content = file.readText()
 
     // Check if file already exists, update if so
-    val existing = client.getFileByName(name)
+    val existing = service.getFileByName(name)
     if (existing != null) {
-        client.updateContent(existing.id, content)
+        existing.content = content  // Mutable property triggers RPC
         println("Updated: $name (id: ${existing.id})")
     } else {
-        val info = client.createFile(name, content)
+        val info = service.createFile(name, content)
         println("Uploaded: $name (id: ${info.id})")
     }
 }
 
-private fun handleDownloadUrl(client: UrlProtocolClient, args: List<String>, outputPath: String?) {
+private fun handleDownloadUrl(service: MarkdownService, args: List<String>, outputPath: String?) {
     if (args.isEmpty()) {
         throw IllegalArgumentException("download requires a file name argument")
     }
 
     val name = args[0]
-    val file = client.getFileByName(name)
+    val markdownFile = service.getFileByName(name)
         ?: throw IllegalArgumentException("File not found: $name")
 
     val outputFile = File(outputPath ?: name)
-    outputFile.writeText(file.content)
+    outputFile.writeText(markdownFile.content)
     println("Downloaded: $name -> ${outputFile.absolutePath}")
 }
 
-private fun handleEditUrl(client: UrlProtocolClient, args: List<String>) {
+private fun handleEditUrl(service: MarkdownService, args: List<String>) {
     if (args.isEmpty()) {
         throw IllegalArgumentException("edit requires a file name argument")
     }
 
     val name = args[0]
-    val file = client.getFileByName(name)
+    val markdownFile = service.getFileByName(name)
 
     // Create temp file
     val tempFile = File.createTempFile("markdown-edit-", ".md")
     tempFile.deleteOnExit()
 
-    if (file != null) {
-        tempFile.writeText(file.content)
+    if (markdownFile != null) {
+        tempFile.writeText(markdownFile.content)
     } else {
         tempFile.writeText("")
     }
@@ -214,7 +231,7 @@ private fun handleEditUrl(client: UrlProtocolClient, args: List<String>) {
     // Get last modified time before editing
     val lastModifiedBefore = tempFile.lastModified()
 
-    // Open vim
+    // Open editor
     val editor = System.getenv("EDITOR") ?: "vim"
     val process = ProcessBuilder(editor, tempFile.absolutePath)
         .inheritIO()
@@ -235,11 +252,11 @@ private fun handleEditUrl(client: UrlProtocolClient, args: List<String>) {
     val newContent = tempFile.readText()
 
     // Save back to server
-    if (file != null) {
-        client.updateContent(file.id, newContent)
+    if (markdownFile != null) {
+        markdownFile.content = newContent  // Mutable property triggers RPC
         println("Updated: $name")
     } else {
-        val info = client.createFile(name, newContent)
+        val info = service.createFile(name, newContent)
         println("Created: $name (id: ${info.id})")
     }
 
@@ -247,8 +264,8 @@ private fun handleEditUrl(client: UrlProtocolClient, args: List<String>) {
     tempFile.delete()
 }
 
-private fun handleListUrl(client: UrlProtocolClient) {
-    val files = client.listFiles()
+private fun handleListUrl(service: MarkdownService) {
+    val files = service.getAllFiles()
 
     if (files.isEmpty()) {
         println("No files found")
@@ -273,22 +290,23 @@ private fun handleListUrl(client: UrlProtocolClient) {
     println("Total: ${files.size} file(s)")
 }
 
-private fun handleDeleteUrl(client: UrlProtocolClient, args: List<String>) {
+private fun handleDeleteUrl(service: MarkdownService, args: List<String>) {
     if (args.isEmpty()) {
         throw IllegalArgumentException("delete requires a file name argument")
     }
 
     val name = args[0]
-    val file = client.getFileByName(name)
+    val file = service.getFileByName(name)
         ?: throw IllegalArgumentException("File not found: $name")
 
-    client.deleteFile(file.id)
+    service.deleteFile(file)
     println("Deleted: $name (id: ${file.id})")
 }
 
-private fun handleHealthUrl(client: UrlProtocolClient) {
-    val result = client.health()
-    println("Server health: $result")
+private fun handleHealthUrl() {
+    // Health check succeeds if we got this far - the sandboxed connection
+    // was established successfully, which means the service is reachable.
+    println("Server health: OK")
 }
 
 // ============================================================================

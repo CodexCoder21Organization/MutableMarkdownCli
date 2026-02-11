@@ -42,7 +42,7 @@ java -jar markdown-cli.jar [options] <command> [args]
 
 | Option | Description | Default |
 |--------|-------------|---------|
-| `-s, --server <url>` | Server URL | `http://localhost:8080` |
+| `-s, --server <url>` | Server URL | `url://markdown/` |
 | `-o, --output <path>` | Output path for download | `<name>` |
 | `-h, --help` | Show help | - |
 
@@ -114,13 +114,22 @@ java -jar markdown-cli.jar --server http://example.com:8080 list
 |----------|-------------|
 | `EDITOR` | Editor to use for `edit` command (default: `vim`) |
 
+## Server URL Formats
+
+| URL Format | Description |
+|------------|-------------|
+| `url://markdown/` | URL protocol (P2P, default) - uses typed SJVM sandboxed client |
+| `http://localhost:8080` | HTTP (for local testing) |
+
+When using the `url://` protocol, the CLI connects to the markdown service over the P2P network using a typed SJVM sandboxed client. The service bytecode is downloaded and executed locally in a sandbox, with mutable property setters on `MarkdownFile` objects triggering RPC calls back to the server.
+
 ## Maven Coordinates
 
 ```
-community.kotlin.markdown:cli:0.0.1
+community.kotlin.markdown:cli:0.0.5
 ```
 
 ## Related Projects
 
 - **MutableMarkdownServiceServer** - The server this CLI connects to
-- **MutableMarkdownApi** - Interface definitions
+- **MutableMarkdownApi** (`community.kotlin.markdown:api`) - Typed interface definitions used by the SJVM sandboxed client
