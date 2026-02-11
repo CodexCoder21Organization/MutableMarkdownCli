@@ -17,10 +17,19 @@ val dependencies = resolveDependencies(
     // CLI parsing
     MavenPrebuilt("commons-cli:commons-cli:1.9.0"),
     // UrlResolver and UrlProtocol for url:// protocol support
-    MavenPrebuilt("foundation.url:resolver:0.0.293"),
+    MavenPrebuilt("foundation.url:resolver:0.0.295"),
     MavenPrebuilt("foundation.url:protocol:0.0.165"),
     // Clock abstraction (required by UrlProtocol)
     MavenPrebuilt("community.kotlin.clocks.simple:community-kotlin-clocks-simple:0.0.1"),
+    // SJVM for sandboxed execution (required by UrlResolver)
+    MavenPrebuilt("net.javadeploy.sjvm:libSJVM-jvm:0.0.24"),
+    MavenPrebuilt("net.javadeploy.sjvm:avianStdlibHelper-jvm:0.0.24"),
+    MavenPrebuilt("net.javadeploy.sjvm:stdlibHelperCommon-jvm:0.0.24"),
+    // ASM for bytecode manipulation (required by UrlResolver)
+    MavenPrebuilt("org.ow2.asm:asm:9.6"),
+    MavenPrebuilt("org.ow2.asm:asm-commons:9.6"),
+    // Markdown API (typed interface for sandboxed client)
+    MavenPrebuilt("community.kotlin.markdown:api:0.0.1"),
     // Coroutines
     MavenPrebuilt("org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm:1.8.0"),
     // libp2p dependencies (required by UrlResolver)
@@ -59,18 +68,20 @@ val dependencies = resolveDependencies(
 @MavenArtifactCoordinates("community.kotlin.markdown:cli:")
 fun buildMaven(): File {
     return buildSimpleKotlinMavenArtifact(
-        // 0.0.1: Initial release
-        //        - upload/download/edit/list/delete commands
-        //        - Uses vim for editing (configurable via EDITOR env var)
-        //        - HTTP client for server communication
+        // 0.0.5: Use typed SJVM client instead of raw sendServiceRpcRequest
+        //        - Upgrade foundation.url:resolver 0.0.293 -> 0.0.295 for openSandboxedConnection
+        // 0.0.4: Fix UrlProtocol version mismatch (0.0.154 → 0.0.165)
+        //        - UrlResolver 0.0.293 requires UrlProtocol 0.0.165
+        // 0.0.3: Update foundation.url:resolver to 0.0.293
         // 0.0.2: Added URL protocol support
         //        - CLI can now connect to url://markdown/ services
         //        - Use --server url://markdown/ to connect via URL protocol
         //        - HTTP client remains for local testing
-        // 0.0.3: Update foundation.url:resolver to 0.0.293
-        // 0.0.4: Fix UrlProtocol version mismatch (0.0.154 → 0.0.165)
-        //        - UrlResolver 0.0.293 requires UrlProtocol 0.0.165
-        coordinates = "community.kotlin.markdown:cli:0.0.4",
+        // 0.0.1: Initial release
+        //        - upload/download/edit/list/delete commands
+        //        - Uses vim for editing (configurable via EDITOR env var)
+        //        - HTTP client for server communication
+        coordinates = "community.kotlin.markdown:cli:0.0.5",
         src = File("src"),
         compileDependencies = dependencies
     )
