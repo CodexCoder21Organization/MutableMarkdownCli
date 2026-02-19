@@ -17,7 +17,7 @@ val dependencies = resolveDependencies(
     // CLI parsing
     MavenPrebuilt("commons-cli:commons-cli:1.9.0"),
     // UrlResolver and UrlProtocol for url:// protocol support
-    MavenPrebuilt("foundation.url:resolver:0.0.295"),
+    MavenPrebuilt("foundation.url:resolver:0.0.358"),
     MavenPrebuilt("foundation.url:protocol:0.0.165"),
     // Clock abstraction (required by UrlProtocol)
     MavenPrebuilt("community.kotlin.clocks.simple:community-kotlin-clocks-simple:0.0.1"),
@@ -70,6 +70,7 @@ fun buildMaven(): File {
     return buildSimpleKotlinMavenArtifact(
         // 0.0.5: Use typed SJVM client instead of raw sendServiceRpcRequest
         //        - Upgrade foundation.url:resolver 0.0.293 -> 0.0.295 for openSandboxedConnection
+        // 0.0.6: Update foundation.url:resolver to 0.0.358
         // 0.0.4: Fix UrlProtocol version mismatch (0.0.154 → 0.0.165)
         //        - UrlResolver 0.0.293 requires UrlProtocol 0.0.165
         // 0.0.3: Update foundation.url:resolver to 0.0.293
@@ -81,7 +82,7 @@ fun buildMaven(): File {
         //        - upload/download/edit/list/delete commands
         //        - Uses vim for editing (configurable via EDITOR env var)
         //        - HTTP client for server communication
-        coordinates = "community.kotlin.markdown:cli:0.0.5",
+        coordinates = "community.kotlin.markdown:cli:0.0.6",
         src = File("src"),
         compileDependencies = dependencies
     )
