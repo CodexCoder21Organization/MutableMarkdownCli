@@ -17,8 +17,8 @@ val dependencies = resolveDependencies(
     // CLI parsing
     MavenPrebuilt("commons-cli:commons-cli:1.9.0"),
     // UrlResolver and UrlProtocol for url:// protocol support
-    MavenPrebuilt("foundation.url:resolver:0.0.358"),
-    MavenPrebuilt("foundation.url:protocol:0.0.165"),
+    MavenPrebuilt("foundation.url:resolver:0.0.362"),
+    MavenPrebuilt("foundation.url:protocol:0.0.255"),
     // Clock abstraction (required by UrlProtocol)
     MavenPrebuilt("community.kotlin.clocks.simple:community-kotlin-clocks-simple:0.0.1"),
     // SJVM for sandboxed execution (required by UrlResolver)
